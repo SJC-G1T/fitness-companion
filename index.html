@@ -3,65 +3,634 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ff6b9d">
-    <meta name="description" content="Weekly training and recovery guide for kettlebells and running">
-    <title>Weekly Fitness Companion</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Strength Workout Timer</title>
+    <meta name="theme-color" content="#208a8d">
+    <meta name="apple-mobile-web-app-capable" content="true">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/png" href="icon-192.png">
+    <style>
+        :root {
+            --color-primary: #208a8d;
+            --color-primary-hover: #1a7578;
+            --color-success: #208a8d;
+            --color-error: #c0152f;
+            --color-bg: #fcfcf9;
+            --color-surface: #ffffff;
+            --color-text: #134252;
+            --color-text-secondary: #626c7c;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --spacing-16: 16px;
+            --spacing-24: 24px;
+            --spacing-32: 32px;
+            --radius-lg: 12px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: var(--spacing-16);
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: var(--spacing-32);
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-16);
+            letter-spacing: -0.01em;
+        }
+        .workout-selector {
+            display: flex;
+            gap: var(--spacing-16);
+            margin-bottom: var(--spacing-24);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .workout-btn {
+            padding: 10px 16px;
+            border: 2px solid var(--color-border);
+            background: var(--color-surface);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            font-size: 14px;
+        }
+        .workout-btn:hover {
+            border-color: var(--color-primary);
+            background: rgba(32, 138, 141, 0.08);
+        }
+        .workout-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        .timer-display {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-32);
+            margin-bottom: var(--spacing-24);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+        .phase-label {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-16);
+        }
+        .phase-label.warmup {
+            color: #f59e61;
+        }
+        .phase-label.main {
+            color: #208a8d;
+        }
+        .phase-label.cooldown {
+            color: #a84f2f;
+        }
+        .time-display {
+            font-size: 64px;
+            font-weight: 600;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            margin: var(--spacing-24) 0;
+            color: var(--color-primary);
+        }
+        .details-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-16);
+            margin-bottom: var(--spacing-24);
+            font-size: 14px;
+        }
+        .detail-box {
+            background: rgba(32, 138, 141, 0.08);
+            padding: var(--spacing-16);
+            border-radius: 8px;
+            border-left: 4px solid var(--color-primary);
+        }
+        .detail-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        .controls {
+            display: flex;
+            gap: var(--spacing-16);
+            margin-bottom: var(--spacing-24);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 16px;
+            flex: 1;
+            min-width: 100px;
+        }
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-primary-hover);
+            box-shadow: 0 4px 12px rgba(32, 138, 141, 0.3);
+        }
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: rgba(32, 138, 141, 0.12);
+            color: var(--color-primary);
+            border: 1px solid var(--color-border);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(32, 138, 141, 0.2);
+        }
+        .btn-danger {
+            background: rgba(192, 21, 47, 0.12);
+            color: var(--color-error);
+            border: 1px solid var(--color-border);
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(192, 21, 47, 0.2);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .instructions {
+            background: rgba(32, 138, 141, 0.08);
+            border-left: 4px solid var(--color-primary);
+            padding: var(--spacing-16);
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-24);
+        }
+        .instructions strong {
+            color: var(--color-text);
+        }
+        .sound-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-top: var(--spacing-16);
+            font-size: 14px;
+        }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+        @media (max-width: 480px) {
+            .time-display {
+                font-size: 48px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+            .details-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .audio-cue {
+            display: none;
+        }
+        .recovery-panel {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-32);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+        .recovery-card h2 {
+            font-size: 22px;
+            margin-bottom: var(--spacing-24);
+            color: var(--color-primary);
+        }
+        .recovery-card p {
+            margin-bottom: 12px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .recovery-card strong {
+            color: var(--color-text);
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Weekly Fitness Companion</h1>
-        <p class="subtitle">Training & Recovery Guide</p>
-    </header>
-
-    <main>
-        <section class="day-selector">
-            <button class="day-btn" data-day="monday">Mon</button>
-            <button class="day-btn" data-day="tuesday">Tue</button>
-            <button class="day-btn" data-day="wednesday">Wed</button>
-            <button class="day-btn" data-day="thursday">Thu</button>
-            <button class="day-btn" data-day="friday">Fri</button>
-            <button class="day-btn" data-day="saturday">Sat</button>
-            <button class="day-btn" data-day="sunday">Sun</button>
-        </section>
-
-        <section id="workout-panel" class="workout-panel">
-            <div class="workout-summary card">
-                <h2 id="day-title"></h2>
-                <div id="phases-list"></div>
-            </div>
-
-            <div id="timer-area" class="timer-area card">
-                <div class="phase-label" id="phase-label">Ready to begin</div>
-                <div class="timer-display" id="timer-display">00:00</div>
-                <div class="phase-info" id="phase-info"></div>
-            </div>
-
-            <div id="controls" class="controls">
-                <div class="audio-toggle">
-                    <label>
-                        <input type="checkbox" id="audio-toggle" checked>
-                        Audio cues enabled
-                    </label>
+    <div class="container">
+        <header>
+            <h1>🏋️ Weekly Fitness Companion</h1>
+            <p style="color: var(--color-text-secondary); font-size: 14px;">Complete Training & Recovery Guide</p>
+        </header>
+        <div class="workout-selector">
+            <button class="workout-btn active" data-day="monday">Monday</button>
+            <button class="workout-btn" data-day="tuesday">Tuesday</button>
+            <button class="workout-btn" data-day="wednesday">Wednesday</button>
+            <button class="workout-btn" data-day="thursday">Thursday</button>
+            <button class="workout-btn" data-day="friday">Friday</button>
+            <button class="workout-btn" data-day="saturday">Saturday</button>
+            <button class="workout-btn" data-day="sunday">Sunday</button>
+        </div>
+        <div class="instructions" id="instructionsBox">
+            <strong>How it works:</strong> Choose your day, hit Start, and the timer will guide you through warm-up → main session → cool-down automatically. Audio cues and voice prompts mark all transitions and workout phases.
+        </div>
+        <div class="timer-display" id="timerDisplay" style="display: block;">
+            <div class="phase-label" id="phaseLabel">Warm-up</div>
+            <div class="time-display" id="timeDisplay">5:00</div>
+            <div class="details-row">
+                <div class="detail-box">
+                    <div class="detail-label">Current Phase</div>
+                    <div class="detail-value" id="phaseDetail">Warm-up</div>
                 </div>
-                <button id="start-btn" class="btn btn-primary">Start</button>
-                <button id="pause-btn" class="btn btn-secondary" style="display:none;">Pause</button>
-                <button id="resume-btn" class="btn btn-secondary" style="display:none;">Resume</button>
-                <button id="stop-btn" class="btn btn-danger" style="display:none;">Stop</button>
-                <button id="restart-btn" class="btn btn-warning" style="display:none;">Restart</button>
+                <div class="detail-box">
+                    <div class="detail-label">Minute</div>
+                    <div class="detail-value" id="minuteDetail">1/5</div>
+                </div>
             </div>
-        </section>
-
-        <section id="recovery-panel" class="recovery-panel" style="display:none;">
-            <div class="recovery-card card">
-                <h2 id="recovery-title"></h2>
-                <ul id="recovery-tips"></ul>
+        </div>
+        <div class="controls">
+            <button class="btn-primary" id="startBtn" onclick="startWorkout()">Start</button>
+            <button class="btn-secondary" id="pauseBtn" onclick="pauseWorkout()" disabled>Pause</button>
+            <button class="btn-secondary" id="resumeBtn" onclick="resumeWorkout()" disabled style="display:none;">Resume</button>
+            <button class="btn-danger" id="stopBtn" onclick="stopWorkout()" disabled>Stop</button>
+            <button class="btn-secondary" id="restartBtn" onclick="restartWorkout()" disabled>Restart</button>
+        </div>
+        <div class="sound-toggle" id="soundToggle" style="display: flex;">
+            <input type="checkbox" id="audioToggle" class="checkbox" checked>
+            <label for="audioToggle" style="cursor: pointer; margin: 0;">Audio cues enabled</label>
+        </div>
+        <div class="recovery-panel" id="recoveryPanel" style="display: none;">
+            <div class="recovery-card">
+                <h2 id="recoveryTitle">Recovery Day</h2>
+                <div id="recoveryContent" style="color: var(--color-text-secondary); font-size: 14px; line-height: 1.8;"></div>
             </div>
-        </section>
-    </main>
-
-    <script src="app.js"></script>
+        </div>
+        <div class="workout-detail-card" id="workoutDetailPanel" style="display: none;">
+            <h2 id="workoutDetailTitle">Workout Details</h2>
+            <div id="workoutDetailContent"></div>
+            <button class="btn-primary" onclick="document.getElementById('timerDisplay').scrollIntoView({ behavior: 'smooth' }); document.getElementById('startBtn').focus();" style="margin-top: var(--spacing-24); width: 100%;">Ready to Start? Go to Timer ↓</button>
+        </div>
+    </div>
+    <audio id="beepSound" class="audio-cue"></audio>
+    <script>
+        const days = {
+            monday: {
+                type: 'workout',
+                name: 'Monday - Full Body KB',
+                emoji: '💪',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: 'Cat-cow, squats, arm circles', voicePrompt: 'Start your warmup' },
+                    { name: 'EMOM (20 min)', duration: 1200, description: '10 KB Swings + 5 Goblet Squats per minute', voicePrompt: 'Begin main session' },
+                    { name: 'Finisher', duration: 180, description: '3x Max Push-ups (rest 60s between)', voicePrompt: 'Finisher time' }
+                ]
+            },
+            tuesday: {
+                type: 'workout',
+                name: 'Tuesday - Cardio Intervals (Sprints)',
+                emoji: '🏃',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min easy jog', voicePrompt: 'Start your warmup' },
+                    { name: 'Sprint Intervals', duration: 720, description: '8x (30s sprint + 90s easy)', voicePrompt: 'Ready for intervals', isCardio: true }
+                ]
+            },
+            wednesday: {
+                type: 'workout',
+                name: 'Wednesday - Armor Building Complex',
+                emoji: '⚙️',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min light movement', voicePrompt: 'Start your warmup' },
+                    { name: 'EMOM (15-20 min)', duration: 1020, description: '2 Cleans + 1 Press + 3 Front Squats', voicePrompt: 'Begin main session' },
+                    { name: 'Accessory', duration: 300, description: '3x 10 Single-Arm KB Rows', voicePrompt: 'Accessory work' }
+                ]
+            },
+            thursday: {
+                type: 'recovery',
+                name: 'Thursday - Active Recovery',
+                emoji: '🧘',
+                tips: [
+                    '<strong>Mobility Flow (15 mins):</strong> Focus on hips, thoracic spine, and shoulders. Slow, controlled movements.',
+                    '<strong>Walking:</strong> 20-30 minute easy walk. Listen to a podcast or audiobook. Aids digestion and mental clarity.',
+                    '<strong>Foam Rolling:</strong> Spend 5 mins on calves, quads, and IT band. Reduces soreness and improves blood flow.',
+                    '<strong>Hydration:</strong> Drink 3-4L water throughout the day. Dehydration mimics hunger.',
+                    '<strong>Sleep Priority:</strong> Aim for 7-9 hours tonight. Sleep is your primary recovery tool for muscle definition.'
+                ]
+            },
+            friday: {
+                type: 'workout',
+                name: 'Friday - Grind & Conditioning',
+                emoji: '🔥',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min prep', voicePrompt: 'Start your warmup' },
+                    { name: 'Ladder Protocol (10 min)', duration: 600, description: '1-10-1 KB Swings + Burpees', voicePrompt: 'Begin main session' },
+                    { name: 'Core Work', duration: 300, description: '3x Plank + 3x Glute Bridges', voicePrompt: 'Cool down with core work' }
+                ]
+            },
+            saturday: {
+                type: 'workout',
+                name: 'Saturday - Endurance Run',
+                emoji: '🏃‍♂️',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min easy pace jog', voicePrompt: 'Start your warmup' },
+                    { name: 'Long Run', duration: 2400, description: '40 mins steady conversational pace (Zone 2)', voicePrompt: 'Begin your long run' },
+                    { name: 'Cool Down', duration: 300, description: '5 min easy walk or jog', voicePrompt: 'Cool down and stretch' }
+                ]
+            },
+            sunday: {
+                type: 'recovery',
+                name: 'Sunday - Complete Rest',
+                emoji: '😴',
+                tips: [
+                    '<strong>Full Rest Day:</strong> No structured training. Allow your CNS (Central Nervous System) to fully recover.',
+                    '<strong>Family Time:</strong> Prioritize leisure activities with family. Stress reduction aids recovery.',
+                    '<strong>Gentle Movement:</strong> Light walk, swimming, or playing with kids counts as NEAT (Non-Exercise Activity).',
+                    '<strong>Meal Prep:</strong> Use this time to prep meals for Mon-Wed. High protein at every meal (30-40g).',
+                    '<strong>Early Bed:</strong> Aim for 9:30 PM bedtime to prep for Monday morning 5:45 AM wake-up.'
+                ]
+            }
+        };
+        const workouts = {
+            monday: {
+                name: 'Monday - Full Body KB',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: 'Cat-cow, squats, arm circles', voicePrompt: 'Start your warmup' },
+                    { name: 'EMOM (20 min)', duration: 1200, description: '10 KB Swings + 5 Goblet Squats per minute', voicePrompt: 'Begin main session' },
+                    { name: 'Finisher', duration: 180, description: '3x Max Push-ups (rest 60s between)', voicePrompt: 'Finisher time' }
+                ]
+            },
+            tuesday: {
+                name: 'Tuesday - Cardio Intervals (Sprints)',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min easy jog', voicePrompt: 'Start your warmup' },
+                    { name: 'Sprint Intervals', duration: 720, description: '8x (30s sprint + 90s easy)', voicePrompt: 'Ready for intervals', isCardio: true }
+                ]
+            },
+            wednesday: {
+                name: 'Wednesday - Armor Building Complex',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min light movement', voicePrompt: 'Start your warmup' },
+                    { name: 'EMOM (15-20 min)', duration: 1020, description: '2 Cleans + 1 Press + 3 Front Squats', voicePrompt: 'Begin main session' },
+                    { name: 'Accessory', duration: 300, description: '3x 10 Single-Arm KB Rows', voicePrompt: 'Accessory work' }
+                ]
+            },
+            friday: {
+                name: 'Friday - Grind & Conditioning',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min prep', voicePrompt: 'Start your warmup' },
+                    { name: 'Ladder Protocol (10 min)', duration: 600, description: '1-10-1 KB Swings + Burpees', voicePrompt: 'Begin main session' },
+                    { name: 'Core Work', duration: 300, description: '3x Plank + 3x Glute Bridges', voicePrompt: 'Cool down with core work' }
+                ]
+            },
+            saturday: {
+                name: 'Saturday - Endurance Run',
+                phases: [
+                    { name: 'Warm-up', duration: 300, description: '5 min easy pace jog', voicePrompt: 'Start your warmup' },
+                    { name: 'Long Run', duration: 2400, description: '40 mins steady conversational pace (Zone 2)', voicePrompt: 'Begin your long run' },
+                    { name: 'Cool Down', duration: 300, description: '5 min easy walk or jog', voicePrompt: 'Cool down and stretch' }
+                ]
+            }
+        };
+        let currentDay = 'monday';
+        let currentPhaseIndex = 0;
+        let timeRemaining = 300;
+        let isRunning = false;
+        let isPaused = false;
+        let timerInterval = null;
+        updateWorkoutDisplay();
+        document.querySelectorAll('.workout-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.workout-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentDay = e.target.dataset.day;
+                stopWorkout();
+                currentPhaseIndex = 0;
+                showDayView();
+            });
+        });
+        function getDayData() {
+            return days[currentDay];
+        }
+        function showDayView() {
+            const dayData = getDayData();
+            if (dayData.type === 'workout') {
+                document.getElementById('timerDisplay').style.display = 'block';
+                document.getElementById('workoutDetailPanel').style.display = 'block';
+                document.getElementById('recoveryPanel').style.display = 'none';
+                document.getElementById('soundToggle').style.display = 'flex';
+                document.getElementById('instructionsBox').innerHTML = `<strong>${dayData.emoji} ${dayData.name}:</strong> Choose your start time and the timer will guide you through warm-up → main session → cool-down automatically.`;
+                updateWorkoutDisplay();
+                showWorkoutDetails();
+            } else {
+                document.getElementById('timerDisplay').style.display = 'none';
+                document.getElementById('workoutDetailPanel').style.display = 'none';
+                document.getElementById('recoveryPanel').style.display = 'block';
+                document.getElementById('soundToggle').style.display = 'none';
+                showRecoveryTips();
+            }
+        }
+        function showRecoveryTips() {
+            const dayData = getDayData();
+            document.getElementById('recoveryTitle').textContent = `${dayData.emoji} ${dayData.name}`;
+            document.getElementById('recoveryContent').innerHTML = dayData.tips.map(tip => `<p style="margin-bottom: 12px;">• ${tip}</p>`).join('');
+        }
+        function showWorkoutDetails() {
+            const dayData = getDayData();
+            const workout = getWorkoutData();
+            document.getElementById('workoutDetailTitle').textContent = `${dayData.emoji} ${dayData.name} - Full Breakdown`;
+            let html = '';
+            workout.phases.forEach((phase, index) => {
+                html += `<div class="workout-phase"><div class="phase-title">Phase ${index + 1}: ${phase.name}</div><div class="phase-description">${phase.description}</div><div class="phase-details"><strong>Duration:</strong> ${Math.floor(phase.duration / 60)} min ${phase.duration % 60} sec</div></div>`;
+            });
+            document.getElementById('workoutDetailContent').innerHTML = html;
+        }
+        function getWorkoutData() {
+            return workouts[currentDay];
+        }
+        function updateWorkoutDisplay() {
+            const workout = getWorkoutData();
+            const phase = workout.phases[currentPhaseIndex];
+            document.getElementById('phaseLabel').textContent = phase.name;
+            document.getElementById('phaseLabel').className = 'phase-label ' + (currentPhaseIndex === 0 ? 'warmup' : currentPhaseIndex === workout.phases.length - 1 ? 'cooldown' : 'main');
+            document.getElementById('phaseDetail').textContent = phase.name;
+            timeRemaining = phase.duration;
+            updateDisplay();
+        }
+        function updateDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timeDisplay').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            const workout = getWorkoutData();
+            const totalMinutes = Math.ceil(workout.phases[currentPhaseIndex].duration / 60);
+            const elapsed = workout.phases[currentPhaseIndex].duration - timeRemaining;
+            const minute = Math.ceil(elapsed / 60) + 1;
+            document.getElementById('minuteDetail').textContent = currentPhaseIndex === 0 ? 'Prep' : `${minute}/${totalMinutes}`;
+        }
+        function playBeep() {
+            if (!document.getElementById('audioToggle').checked) return;
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {}
+        }
+        function playVoicePrompt(text) {
+            if (!document.getElementById('audioToggle').checked) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+        function startWorkout() {
+            const dayData = getDayData();
+            if (dayData.type !== 'workout') {
+                alert('This is a recovery day. No timer needed. Focus on the recovery tips instead!');
+                return;
+            }
+            isRunning = true;
+            isPaused = false;
+            currentPhaseIndex = 0;
+            updateWorkoutDisplay();
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('restartBtn').disabled = false;
+            document.querySelectorAll('.workout-btn').forEach(b => b.disabled = true);
+            playBeep();
+            const workout = getWorkoutData();
+            playVoicePrompt(workout.phases[0].voicePrompt || 'Workout starting');
+            runTimer();
+        }
+        function runTimer() {
+            if (!isRunning || isPaused) return;
+            timerInterval = setInterval(() => {
+                if (!isRunning || isPaused) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                timeRemaining--;
+                updateDisplay();
+                if (currentPhaseIndex === 0 && timeRemaining === 30) {
+                    playVoicePrompt('Warmup ending in 30 seconds. Get ready.');
+                }
+                if (timeRemaining <= 0) {
+                    playBeep();
+                    currentPhaseIndex++;
+                    const workout = getWorkoutData();
+                    if (currentPhaseIndex >= workout.phases.length) {
+                        finishWorkout();
+                        return;
+                    }
+                    timeRemaining = workout.phases[currentPhaseIndex].duration;
+                    updateWorkoutDisplay();
+                    playBeep();
+                    playVoicePrompt(workout.phases[currentPhaseIndex].voicePrompt || 'Next phase starting');
+                }
+            }, 1000);
+        }
+        function pauseWorkout() {
+            isPaused = true;
+            isRunning = false;
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('resumeBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('resumeBtn').disabled = false;
+        }
+        function resumeWorkout() {
+            isPaused = false;
+            isRunning = true;
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('resumeBtn').disabled = true;
+            runTimer();
+        }
+        function stopWorkout() {
+            isRunning = false;
+            isPaused = false;
+            clearInterval(timerInterval);
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('resumeBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+            document.querySelectorAll('.workout-btn').forEach(b => b.disabled = false);
+            currentPhaseIndex = 0;
+            updateWorkoutDisplay();
+        }
+        function restartWorkout() {
+            stopWorkout();
+            startWorkout();
+        }
+        function finishWorkout() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('timeDisplay').textContent = '✓ Done!';
+            document.getElementById('timeDisplay').style.color = 'var(--color-success)';
+            document.getElementById('phaseLabel').textContent = 'Workout Complete';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = false;
+            document.querySelectorAll('.workout-btn').forEach(b => b.disabled = false);
+            playVoicePrompt('Workout complete. Great session!');
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => playBeep(), i * 300);
+            }
+        }
+    </script>
 </body>
 </html>
