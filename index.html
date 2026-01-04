@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ff6b9d">
+    <meta name="description" content="Weekly training and recovery guide for kettlebells and running">
+    <title>Weekly Fitness Companion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icon-192.png">
+</head>
+<body>
+    <header>
+        <h1>Weekly Fitness Companion</h1>
+        <p class="subtitle">Training & Recovery Guide</p>
+    </header>
+
+    <main>
+        <section class="day-selector">
+            <button class="day-btn" data-day="monday">Mon</button>
+            <button class="day-btn" data-day="tuesday">Tue</button>
+            <button class="day-btn" data-day="wednesday">Wed</button>
+            <button class="day-btn" data-day="thursday">Thu</button>
+            <button class="day-btn" data-day="friday">Fri</button>
+            <button class="day-btn" data-day="saturday">Sat</button>
+            <button class="day-btn" data-day="sunday">Sun</button>
+        </section>
+
+        <section id="workout-panel" class="workout-panel">
+            <div class="workout-summary card">
+                <h2 id="day-title"></h2>
+                <div id="phases-list"></div>
+            </div>
+
+            <div id="timer-area" class="timer-area card">
+                <div class="phase-label" id="phase-label">Ready to begin</div>
+                <div class="timer-display" id="timer-display">00:00</div>
+                <div class="phase-info" id="phase-info"></div>
+            </div>
+
+            <div id="controls" class="controls">
+                <div class="audio-toggle">
+                    <label>
+                        <input type="checkbox" id="audio-toggle" checked>
+                        Audio cues enabled
+                    </label>
+                </div>
+                <button id="start-btn" class="btn btn-primary">Start</button>
+                <button id="pause-btn" class="btn btn-secondary" style="display:none;">Pause</button>
+                <button id="resume-btn" class="btn btn-secondary" style="display:none;">Resume</button>
+                <button id="stop-btn" class="btn btn-danger" style="display:none;">Stop</button>
+                <button id="restart-btn" class="btn btn-warning" style="display:none;">Restart</button>
+            </div>
+        </section>
+
+        <section id="recovery-panel" class="recovery-panel" style="display:none;">
+            <div class="recovery-card card">
+                <h2 id="recovery-title"></h2>
+                <ul id="recovery-tips"></ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
