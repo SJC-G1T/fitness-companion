@@ -69,6 +69,10 @@
         .sound-toggle { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: var(--spacing-16); font-size: 14px; }
         .checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: var(--color-primary); }
         .main-content { display: flex; flex-direction: column; gap: var(--spacing-24); }
+        .nutrition-section { background: rgba(255, 77, 125, 0.05); border-left: 4px solid #f59e61; padding: var(--spacing-16); border-radius: 8px; margin-bottom: var(--spacing-16); }
+        .nutrition-title { font-weight: 600; color: #f59e61; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; }
+        .nutrition-item { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; line-height: 1.5; }
+        .nutrition-item strong { color: var(--color-text); }
         @media (max-width: 480px) {
             .time-display { font-size: 56px; }
             h1 { font-size: 24px; }
@@ -150,18 +154,19 @@
             <div class="workout-detail-card" id="workoutDetailPanel" style="display: none;">
                 <h2 id="workoutDetailTitle">Workout Details</h2>
                 <div id="workoutDetailContent"></div>
+                <div id="nutritionGuidance" style="margin-top: var(--spacing-24);"></div>
             </div>
         </div>
     </div>
     <script>
         const days = {
-            monday: { type: 'workout', name: 'Monday - Full Body KB', emoji: '💪', phases: [{ name: 'Warm-up', duration: 300, description: 'Cat-cow, squats, arm circles', voicePrompt: 'Start your warmup' }, { name: 'EMOM (20 min)', duration: 1200, description: '10 KB Swings + 5 Goblet Squats per minute', voicePrompt: 'Begin main session' }, { name: 'Finisher', duration: 180, description: '3x Max Push-ups (rest 60s between)', voicePrompt: 'Finisher time' }] },
-            tuesday: { type: 'workout', name: 'Tuesday - Cardio Intervals (Sprints)', emoji: '🏃', phases: [{ name: 'Warm-up', duration: 300, description: '5 min easy jog', voicePrompt: 'Start your warmup' }, { name: 'Sprint Intervals', duration: 720, description: '8x (30s sprint + 90s easy)', voicePrompt: 'Ready for intervals', isCardio: true }] },
-            wednesday: { type: 'workout', name: 'Wednesday - Armor Building Complex', emoji: '⚙️', phases: [{ name: 'Warm-up', duration: 300, description: '5 min light movement', voicePrompt: 'Start your warmup' }, { name: 'EMOM (15-20 min)', duration: 1020, description: '2 Cleans + 1 Press + 3 Front Squats', voicePrompt: 'Begin main session' }, { name: 'Accessory', duration: 300, description: '3x 10 Single-Arm KB Rows', voicePrompt: 'Accessory work' }] },
-            thursday: { type: 'recovery', name: 'Thursday - Active Recovery', emoji: '🧘', tips: ['<strong>Mobility Flow (15 mins):</strong> Focus on hips, thoracic spine, and shoulders. Slow, controlled movements.', '<strong>Walking:</strong> 20-30 minute easy walk. Listen to a podcast or audiobook. Aids digestion and mental clarity.', '<strong>Foam Rolling:</strong> Spend 5 mins on calves, quads, and IT band. Reduces soreness and improves blood flow.', '<strong>Hydration:</strong> Drink 3-4L water throughout the day. Dehydration mimics hunger.', '<strong>Sleep Priority:</strong> Aim for 7-9 hours tonight. Sleep is your primary recovery tool for muscle definition.'] },
-            friday: { type: 'workout', name: 'Friday - Grind & Conditioning', emoji: '🔥', phases: [{ name: 'Warm-up', duration: 300, description: '5 min prep', voicePrompt: 'Start your warmup' }, { name: 'Ladder Protocol (10 min)', duration: 600, description: '1-10-1 KB Swings + Burpees', voicePrompt: 'Begin main session' }, { name: 'Core Work', duration: 300, description: '3x Plank + 3x Glute Bridges', voicePrompt: 'Cool down with core work' }] },
-            saturday: { type: 'workout', name: 'Saturday - Endurance Run', emoji: '🏃‍♂️', phases: [{ name: 'Warm-up', duration: 300, description: '5 min easy pace jog', voicePrompt: 'Start your warmup' }, { name: 'Long Run', duration: 2400, description: '40 mins steady conversational pace (Zone 2)', voicePrompt: 'Begin your long run' }, { name: 'Cool Down', duration: 300, description: '5 min easy walk or jog', voicePrompt: 'Cool down and stretch' }] },
-            sunday: { type: 'recovery', name: 'Sunday - Complete Rest', emoji: '😴', tips: ['<strong>Full Rest Day:</strong> No structured training. Allow your CNS (Central Nervous System) to fully recover.', '<strong>Family Time:</strong> Prioritize leisure activities with family. Stress reduction aids recovery.', '<strong>Gentle Movement:</strong> Light walk, swimming, or playing with kids counts as NEAT (Non-Exercise Activity).', '<strong>Meal Prep:</strong> Use this time to prep meals for Mon-Wed. High protein at every meal (30-40g).', '<strong>Early Bed:</strong> Aim for 9:30 PM bedtime to prep for Monday morning 5:45 AM wake-up.'] }
+            monday: { type: 'workout', name: 'Monday - Full Body KB', emoji: '💪', phases: [{ name: 'Warm-up', duration: 300, description: 'Cat-cow, squats, arm circles', voicePrompt: 'Start your warmup' }, { name: 'EMOM (20 min)', duration: 1200, description: '10 KB Swings + 5 Goblet Squats per minute', voicePrompt: 'Begin main session' }, { name: 'Finisher', duration: 180, description: '3x Max Push-ups (rest 60s between)', voicePrompt: 'Finisher time' }], nutrition: { wake: '05:45 AM - 500ml water with electrolytes', preWorkout: 'Banana + 500ml water with electrolytes (30-45 mins before)', postWorkout: 'Whey protein 25-30g + 2 slices toast (within 30 mins)', breakfast: 'Eggs (high leucine for muscle growth)', hydration: '3-4L water by end of day', bed: '10:15 PM' } },
+            tuesday: { type: 'workout', name: 'Tuesday - Cardio Intervals (Sprints)', emoji: '🏃', phases: [{ name: 'Warm-up', duration: 300, description: '5 min easy jog', voicePrompt: 'Start your warmup' }, { name: 'Sprint Intervals', duration: 720, description: '8x (30s sprint + 90s easy)', voicePrompt: 'Ready for intervals', isCardio: true }], nutrition: { wake: '05:45 AM - 500ml water', preWorkout: 'Banana + electrolytes (high sodium for sweat loss)', postWorkout: 'Protein 25-30g + rice cakes (within 30 mins)', focus: 'Sodium replacement, high hydration', hydration: '4-5L water (increased sweat loss)', bed: '10:15 PM' } },
+            wednesday: { type: 'workout', name: 'Wednesday - Armor Building Complex', emoji: '⚙️', phases: [{ name: 'Warm-up', duration: 300, description: '5 min light movement', voicePrompt: 'Start your warmup' }, { name: 'EMOM (15-20 min)', duration: 1020, description: '2 Cleans + 1 Press + 3 Front Squats', voicePrompt: 'Begin main session' }, { name: 'Accessory', duration: 300, description: '3x 10 Single-Arm KB Rows', voicePrompt: 'Accessory work' }], nutrition: { wake: '05:45 AM', preWorkout: 'Oatmeal + 500ml water with electrolytes (45 mins before)', postWorkout: 'Whey 25-30g + fruit (within 30 mins)', focus: 'Hypertrophy - higher protein tolerance post-workout', hydration: '3-4L water', bed: '10:15 PM' } },
+            thursday: { type: 'recovery', name: 'Thursday - Active Recovery', emoji: '🧘', tips: ['<strong>06:30 AM:</strong> Sleep in 45 mins extra - CNS recovery', '<strong>07:00 AM (15-min Mobility Flow):</strong> Hip circles, cat-cow, shoulder rolls, thoracic spine twists. Slow, controlled movements during kids breakfast.', '<strong>Workday - NEAT Focus:</strong> Take stairs instead of elevator. Stand at desk. Walk during calls. Park further away.', '<strong>06:30 PM - Evening Walk:</strong> 20-30 min gentle walk with family/dog. Aids digestion and blood sugar regulation.', '<strong>Nutrition - Light Protein:</strong> 20-25g per meal (eggs, Greek yogurt, chicken). Focus on prepping meals for Mon-Wed.', '<strong>Hydration:</strong> 3-4L water throughout day. No intense training.', '<strong>Sleep:</strong> 7-9 hours. Aim for 10:15 PM bed for CNS recovery.'], nutrition: { focus: 'Light protein (20-25g per meal)', hydration: '3-4L water', mealPrep: '3-4 hour meal prep session for Mon-Wed meals', sleep: '7-9 hours', activities: 'Mobility flow (15 mins), evening walk (20-30 mins), meal prep prep' } },
+            friday: { type: 'workout', name: 'Friday - Grind & Conditioning', emoji: '🔥', phases: [{ name: 'Warm-up', duration: 300, description: '5 min prep', voicePrompt: 'Start your warmup' }, { name: 'Ladder Protocol (10 min)', duration: 600, description: '1-10-1 KB Swings + Burpees', voicePrompt: 'Begin main session' }, { name: 'Core Work', duration: 300, description: '3x Plank + 3x Glute Bridges', voicePrompt: 'Cool down with core work' }], nutrition: { wake: '05:45 AM', preWorkout: 'Carbs + electrolytes (high intensity session)', postWorkout: 'Whey 25-30g + simple carbs (rice cakes, banana)', evening: 'Cheat meal allowed if protein-rich', hydration: '3-4L water', bed: '10:15 PM' } },
+            saturday: { type: 'workout', name: 'Saturday - Endurance Run', emoji: '🏃‍♂️', phases: [{ name: 'Warm-up', duration: 300, description: '5 min easy pace jog', voicePrompt: 'Start your warmup' }, { name: 'Long Run', duration: 2400, description: '40 mins steady conversational pace (Zone 2)', voicePrompt: 'Begin your long run' }, { name: 'Cool Down', duration: 300, description: '5 min easy walk or jog', voicePrompt: 'Cool down and stretch' }], nutrition: { wake: '07:00 AM', preWorkout: 'Banana (light carbs, no heavy protein)', during: 'Sip water every 20 mins if >45 mins', postWorkout: 'Protein 25-30g + complex carbs (replenish glycogen, 2:1 carb:protein)', focus: 'Recovery carbs for glycogen replenishment', hydration: '4L + during run', bed: '10:15 PM' } },
+            sunday: { type: 'recovery', name: 'Sunday - Complete Rest', emoji: '😴', tips: ['<strong>Morning:</strong> Sleep in. Family breakfast. No alarm clock.', '<strong>Activity:</strong> Leisurely family walk, swimming, or playing with kids. Light movement counts as NEAT.', '<strong>Meal Prep (3-4 hours):</strong> Batch cook meals for Mon-Wed. Focus on: Grilled chicken, rice, roasted vegetables, eggs, Greek yogurt.', '<strong>Nutrition - High Protein:</strong> 30-40g per meal. Light meals (maintenance calories). Focus: Prep quality ingredients.', '<strong>Hydration:</strong> 3L minimum water throughout day.', '<strong>Supplementation Setup:</strong> Organize electrolyte sachets, protein powder, creatine (5g daily) for the week.', '<strong>Preparation:</strong> Lay out workout clothes for Monday 5:45 AM. Charge fitness watch. Set alarm for 05:15 AM.', '<strong>Early Bed:</strong> 09:30 PM bedtime to prepare for Monday 5:45 AM wake-up and CNS recovery.'], nutrition: { meals: 'Light, maintenance calories. 30-40g protein per meal', hydration: '3L minimum', mealPrep: '3-4 hours batch cooking for Mon-Wed', supplementSetup: 'Organize: electrolytes, whey protein, creatine (5g daily)', sleep: 'Early bed 9:30 PM for Monday prep' } }
         };
         const workouts = {
             monday: { name: 'Monday - Full Body KB', phases: [{ name: 'Warm-up', duration: 300, description: 'Cat-cow, squats, arm circles', voicePrompt: 'Start your warmup' }, { name: 'EMOM (20 min)', duration: 1200, description: '10 KB Swings + 5 Goblet Squats per minute', voicePrompt: 'Begin main session' }, { name: 'Finisher', duration: 180, description: '3x Max Push-ups (rest 60s between)', voicePrompt: 'Finisher time' }] },
@@ -191,6 +196,7 @@
                 document.getElementById('instructionsBox').innerHTML = `<strong>${dayData.emoji} ${dayData.name}:</strong> Choose your start time and the timer will guide you through warm-up → main session → cool-down automatically.`;
                 updateWorkoutDisplay();
                 showWorkoutDetails();
+                showNutritionGuidance();
             } else {
                 document.getElementById('timerDisplay').style.display = 'none';
                 document.getElementById('workoutDetailPanel').style.display = 'none';
@@ -202,7 +208,15 @@
         function showRecoveryTips() {
             const dayData = getDayData();
             document.getElementById('recoveryTitle').textContent = `${dayData.emoji} ${dayData.name}`;
-            document.getElementById('recoveryContent').innerHTML = dayData.tips.map(tip => `<p style="margin-bottom: 12px;">• ${tip}</p>`).join('');
+            let html = dayData.tips.map(tip => `<p style="margin-bottom: 12px;">• ${tip}</p>`).join('');
+            if (dayData.nutrition) {
+                html += '<div style="margin-top: 20px; border-top: 1px solid rgba(255,77,125,0.2); padding-top: 16px;"><strong style="color: #f59e61;">Nutrition & Hydration:</strong>';
+                Object.entries(dayData.nutrition).forEach(([key, value]) => {
+                    html += `<p style="margin: 8px 0; font-size: 13px; color: var(--color-text-secondary);"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${value}</p>`;
+                });
+                html += '</div>';
+            }
+            document.getElementById('recoveryContent').innerHTML = html;
         }
         function showWorkoutDetails() {
             const dayData = getDayData();
@@ -213,6 +227,17 @@
                 html += `<div class="workout-phase"><div class="phase-title">Phase ${index + 1}: ${phase.name}</div><div class="phase-description">${phase.description}</div><div class="phase-details"><strong>Duration:</strong> ${Math.floor(phase.duration / 60)} min ${phase.duration % 60} sec</div></div>`;
             });
             document.getElementById('workoutDetailContent').innerHTML = html;
+        }
+        function showNutritionGuidance() {
+            const dayData = getDayData();
+            if (!dayData.nutrition) return;
+            let html = '<div style="margin-top: 24px; border-top: 1px solid rgba(255,77,125,0.2); padding-top: 16px;"><strong style="font-size: 16px; color: #f59e61; display: block; margin-bottom: 12px;">🥗 Nutrition & Hydration</strong>';
+            Object.entries(dayData.nutrition).forEach(([key, value]) => {
+                const label = key.replace(/([A-Z])/g, ' $1').trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                html += `<div class="nutrition-section"><div class="nutrition-title">${label}</div><div class="nutrition-item">${value}</div></div>`;
+            });
+            html += '</div>';
+            document.getElementById('nutritionGuidance').innerHTML = html;
         }
         function getWorkoutData() { return workouts[currentDay]; }
         function updateWorkoutDisplay() {
